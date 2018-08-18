@@ -22,17 +22,27 @@ class MapVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         mapView.delegate = self
+        // mapView.showsZoomControls = true
+        
         
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.startUpdatingLocation()
         configureLocationService()
+        
+        addTapGestureRecognizer()
+        
     }
     
     @IBAction func centerBtnPressed(_ sender: Any) {
         if authorizationStatus == .authorizedWhenInUse {
             centerMapOnUserLocation()
         }
+    }
+    
+    func addTapGestureRecognizer() {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dropApin(sender:)))
+        mapView.addGestureRecognizer(tap)
     }
     
 }
@@ -50,6 +60,35 @@ extension MapVC: MKMapViewDelegate {
         let coordinateRegion = MKCoordinateRegionMakeWithDistance(coordinate, regionRadius, regionRadius)
         
         mapView.setRegion(coordinateRegion, animated: true)
+    }
+    
+    // Guaranty the initial centering to current location
+    func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
+        centerMapOnUserLocation()
+    }
+    
+    @objc func dropApin(sender: UITapGestureRecognizer) {
+        
+        removePin()
+        
+        // get the coordinate of tap gesture
+        let touchPoint = sender.location(in: mapView) as CGPoint
+        let touchCoordinate = mapView.convert(touchPoint, toCoordinateFrom: mapView)
+        
+        // create a marker on the map
+        let annotation = DroppablePin(coordinate: touchCoordinate, identifier: "droppablePin")
+        mapView.addAnnotation(annotation)
+        
+        // zoom and center the new marker
+        let coordinateRegion = MKCoordinateRegionMakeWithDistance(touchCoordinate, regionRadius, regionRadius)
+        mapView.setRegion(coordinateRegion, animated: true)
+        
+    }
+    
+    func removePin() {
+        for annotation in mapView.annotations {
+            mapView.removeAnnotation(annotation)
+        }
     }
     
 }

@@ -13,6 +13,7 @@
 		3B272EB22128172B00E6BC9D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3B272EB02128172B00E6BC9D /* Main.storyboard */; };
 		3B272EB42128172D00E6BC9D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B272EB32128172D00E6BC9D /* Assets.xcassets */; };
 		3B272EB72128172D00E6BC9D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3B272EB52128172D00E6BC9D /* LaunchScreen.storyboard */; };
+		3BF407F22128AB0A00E4D7F7 /* DroppablePin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF407F12128AB0A00E4D7F7 /* DroppablePin.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +24,7 @@
 		3B272EB32128172D00E6BC9D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3B272EB62128172D00E6BC9D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		3B272EB82128172D00E6BC9D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3BF407F12128AB0A00E4D7F7 /* DroppablePin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroppablePin.swift; sourceTree = "<group>"; };
 		5B1353C8E24211C6CBA00553 /* Pods-Pixel city.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Pixel city.release.xcconfig"; path = "Pods/Target Support Files/Pods-Pixel city/Pods-Pixel city.release.xcconfig"; sourceTree = "<group>"; };
 		EA4D96BE0BDAED345A8ECD5C /* Pods_Pixel_city.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Pixel_city.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECB153B0223B3C9FBC8D4487 /* Pods-Pixel city.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Pixel city.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Pixel city/Pods-Pixel city.debug.xcconfig"; sourceTree = "<group>"; };
@@ -85,6 +87,7 @@
 		3B272EC2212838DC00E6BC9D /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				3BF407F12128AB0A00E4D7F7 /* DroppablePin.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -235,6 +238,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3B272EAF2128172B00E6BC9D /* MapVC.swift in Sources */,
+				3BF407F22128AB0A00E4D7F7 /* DroppablePin.swift in Sources */,
 				3B272EAD2128172B00E6BC9D /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
