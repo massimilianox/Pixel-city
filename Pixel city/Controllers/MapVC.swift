@@ -22,14 +22,11 @@ class MapVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         mapView.delegate = self
-        // mapView.showsZoomControls = true
-        
         
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.startUpdatingLocation()
         configureLocationService()
-        
         addTapGestureRecognizer()
         
     }
@@ -50,6 +47,26 @@ class MapVC: UIViewController {
 // Extension to handle Map View delegate
 extension MapVC: MKMapViewDelegate {
     
+    // Guaranty the initial centering to current location
+    func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
+        centerMapOnUserLocation()
+    }
+    
+    // Customize the pin
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        
+        if annotation is MKUserLocation {
+            return nil
+        }
+        
+        // customize the pin
+        let pinAnnotation = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "droppablePin")
+        pinAnnotation.pinTintColor = #colorLiteral(red: 0.3843137255, green: 0.5215686275, blue: 0.7176470588, alpha: 1)
+        pinAnnotation.animatesDrop = true
+        
+        return pinAnnotation
+    }
+    
     func centerMapOnUserLocation() {
         guard let coordinate = locationManager.location?.coordinate else { return }
         
@@ -60,11 +77,6 @@ extension MapVC: MKMapViewDelegate {
         let coordinateRegion = MKCoordinateRegionMakeWithDistance(coordinate, regionRadius, regionRadius)
         
         mapView.setRegion(coordinateRegion, animated: true)
-    }
-    
-    // Guaranty the initial centering to current location
-    func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
-        centerMapOnUserLocation()
     }
     
     @objc func dropApin(sender: UITapGestureRecognizer) {
