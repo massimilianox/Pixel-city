@@ -9,6 +9,8 @@
 import UIKit
 import MapKit
 import CoreLocation
+import Alamofire
+import AlamofireImage
 
 class MapVC: UIViewController {
 
@@ -28,6 +30,7 @@ class MapVC: UIViewController {
     var photogalleryCollectionViewFlowLayout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
     lazy var photogalleryCollectionView: UICollectionView = UICollectionView(frame: view.bounds, collectionViewLayout: photogalleryCollectionViewFlowLayout)
     
+    var photogalleryImgUrl = [String]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -177,6 +180,11 @@ extension MapVC: MKMapViewDelegate {
         let annotation = DroppablePin(coordinate: touchCoordinate, identifier: pinIdentifier)
         mapView.addAnnotation(annotation)
         
+        retriveImgUrls(forAnnotation: annotation) { (success) in
+            if success {
+                print("img url successfully loaded:\n\(self.photogalleryImgUrl)")
+            }
+        }
         // zoom and center the new marker
         let coordinateRegion = MKCoordinateRegionMakeWithDistance(touchCoordinate, regionRadius, regionRadius)
         mapView.setRegion(coordinateRegion, animated: true)
@@ -188,6 +196,26 @@ extension MapVC: MKMapViewDelegate {
     func removePin() {
         for annotation in mapView.annotations {
             mapView.removeAnnotation(annotation)
+        }
+    }
+    
+    func retriveImgUrls(forAnnotation annotation: DroppablePin, completion: @escaping (_ success: Bool) -> ()) {
+        photogalleryImgUrl = []
+        
+        Alamofire.request(flickrUrlSearch(forAnnotation: annotation, numberOfPhotos: 40)).responseJSON { (response) in
+            
+            if response.result.error == nil {
+                guard let json = response.result.value as? Dictionary<String, Any> else { return }
+                guard let photosDict = json["photos"] as? Dictionary<String, Any> else { return }
+                guard let photoDict = photosDict["photo"] as? [Dictionary<String, Any>] else { return }
+                
+                for var photo in photoDict {
+                    let url = "https://farm\(photo["farm"]!).staticflickr.com/\(photo["server"]!)/\(photo["id"]!)_\(photo["secret"]!)_h_d.jpg"
+                    self.photogalleryImgUrl.append(url)
+                }
+            }
+
+            completion(true)
         }
     }
 
