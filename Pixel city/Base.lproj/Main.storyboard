@@ -32,20 +32,33 @@
                                     <action selector="centerBtnPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="7n7-pk-Sa2"/>
                                 </connections>
                             </button>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="V9K-9e-Orf">
+                            <view contentMode="scaleAspectFill" translatesAutoresizingMaskIntoConstraints="NO" id="V9K-9e-Orf">
                                 <rect key="frame" x="0.0" y="568" width="320" height="0.0"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" id="isT-fS-oB6"/>
                                 </constraints>
                             </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zyX-OZ-Ajn">
+                                <rect key="frame" x="132" y="522" width="56" height="46"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="46" id="FYM-KB-cAs"/>
+                                    <constraint firstAttribute="width" constant="56" id="fwJ-eJ-NY4"/>
+                                </constraints>
+                                <state key="normal" image="arrowDownButton"/>
+                                <connections>
+                                    <action selector="closePhotoViewPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="65H-Kf-WqU"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="zyX-OZ-Ajn" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="1Ng-M7-98P"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="ur3-0V-9Fp" secondAttribute="trailing" constant="20" id="3P9-LT-Fg0"/>
                             <constraint firstItem="cM7-D9-8Yc" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="5FA-wr-1CN"/>
                             <constraint firstItem="V9K-9e-Orf" firstAttribute="top" secondItem="cM7-D9-8Yc" secondAttribute="bottom" id="FNn-cC-6C7"/>
                             <constraint firstItem="V9K-9e-Orf" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="GfK-Ma-a4P"/>
+                            <constraint firstItem="V9K-9e-Orf" firstAttribute="top" secondItem="zyX-OZ-Ajn" secondAttribute="bottom" id="Huh-mN-tuO"/>
                             <constraint firstItem="cM7-D9-8Yc" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="PX3-My-SCb"/>
                             <constraint firstAttribute="trailing" secondItem="V9K-9e-Orf" secondAttribute="trailing" id="hMJ-7Z-9DQ"/>
                             <constraint firstItem="cM7-D9-8Yc" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="r0c-qk-awg"/>
@@ -56,6 +69,7 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
+                        <outlet property="closePhotoViewBtn" destination="zyX-OZ-Ajn" id="4bu-pB-AuQ"/>
                         <outlet property="mapView" destination="cM7-D9-8Yc" id="Iep-Yb-feQ"/>
                         <outlet property="photoView" destination="V9K-9e-Orf" id="juo-xe-qdD"/>
                         <outlet property="photoViewHeightConstraint" destination="isT-fS-oB6" id="0Sj-J9-lTP"/>
@@ -65,8 +79,38 @@
             </objects>
             <point key="canvasLocation" x="135" y="133.09859154929578"/>
         </scene>
+        <!--PopVC-->
+        <scene sceneID="uhH-t5-xkC">
+            <objects>
+                <viewController storyboardIdentifier="popVC" id="Wge-RM-CeS" customClass="PopVC" customModule="Pixel_city" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="PAf-uh-sCX">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="vWY-Yb-5OM">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="vWY-Yb-5OM" firstAttribute="bottom" secondItem="7G3-qb-hVr" secondAttribute="bottom" id="1bx-3q-DTg"/>
+                            <constraint firstItem="vWY-Yb-5OM" firstAttribute="trailing" secondItem="7G3-qb-hVr" secondAttribute="trailing" id="FZm-ur-K3A"/>
+                            <constraint firstItem="vWY-Yb-5OM" firstAttribute="top" secondItem="PAf-uh-sCX" secondAttribute="top" id="fpN-gy-o4J"/>
+                            <constraint firstItem="vWY-Yb-5OM" firstAttribute="leading" secondItem="7G3-qb-hVr" secondAttribute="leading" id="hap-b5-nKz"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="7G3-qb-hVr"/>
+                    </view>
+                    <connections>
+                        <outlet property="popPhotogalleryImg" destination="vWY-Yb-5OM" id="LfX-ZF-tCh"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="NPo-dN-dDf" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1113.75" y="132.04225352112675"/>
+        </scene>
     </scenes>
     <resources>
+        <image name="arrowDownButton" width="97" height="80"/>
         <image name="locationButton" width="67" height="67"/>
     </resources>
 </document>

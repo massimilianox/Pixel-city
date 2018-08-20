@@ -18,6 +18,7 @@ class MapVC: UIViewController {
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var photoView: UIView!
     @IBOutlet weak var photoViewHeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var closePhotoViewBtn: UIButton!
     
     // Map view
     private var locationManager = CLLocationManager()
@@ -31,6 +32,7 @@ class MapVC: UIViewController {
     lazy var photogalleryCollectionView: UICollectionView = UICollectionView(frame: view.bounds, collectionViewLayout: photogalleryCollectionViewFlowLayout)
     
     var photogalleryImgUrl = [String]()
+    var photogalleryImg = [UIImage]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,24 +40,35 @@ class MapVC: UIViewController {
         // Map view settings
         mapView.delegate = self
         locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        // locationManager.desiredAccuracy = kCLLocationAccuracyBest // Not necessary
         locationManager.startUpdatingLocation()
         configureLocationService()
         
         // Gesture recognizer
         addTapGestureRecognizer()
-        addSwipeGestureRecognizer()
+        // addSwipeGestureRecognizer()
         
         // Photogallery
-        photogalleryCollectionView.register(PhotogalleryCell.self, forCellWithReuseIdentifier: photoCellReuseIdentifier)
-        // photogalleryCollectionView.backgroundColor = #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1)
         photogalleryCollectionView.delegate = self
         photogalleryCollectionView.dataSource = self
+        photogalleryCollectionView.register(PhotogalleryCell.self, forCellWithReuseIdentifier: photoCellReuseIdentifier)
+        photogalleryCollectionView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
+        photogalleryCollectionView.frame = CGRect(
+            origin: CGPoint(x: 0, y: 0),
+            size: CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height / 2)
+        )
         photoView.addSubview(photogalleryCollectionView)
+        photogalleryCollectionViewFlowLayout.minimumLineSpacing = 1
+        photogalleryCollectionViewFlowLayout.minimumInteritemSpacing = 1
+        
+        // Register for 3D Touch conform to protocol UIViewControllerPreviewingDelegate
+        registerForPreviewing(with: self, sourceView: photogalleryCollectionView)
         
         // Spinner
         spinner.isHidden = true
         photoView.addSubview(spinner)
+        
+        closePhotoViewBtn.isHidden = true
         
     }
     
@@ -65,28 +78,36 @@ class MapVC: UIViewController {
         }
     }
     
+    @IBAction func closePhotoViewPressed(_ sender: Any) {
+        animateViewDown()
+    }
+    
     func addTapGestureRecognizer() {
         let tap = UITapGestureRecognizer(target: self, action: #selector(dropApin(sender:)))
         mapView.addGestureRecognizer(tap)
     }
     
-    func addSwipeGestureRecognizer() {
-        let swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(animateViewDown))
-        swipeDown.direction = .down
-        photoView.addGestureRecognizer(swipeDown)
-    }
-    
+//    func addSwipeGestureRecognizer() {
+//        let swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(animateViewDown))
+//        swipeDown.direction = .down
+//        photoView.addGestureRecognizer(swipeDown)
+//    }
+
     func animateViewUp() {
-        photoViewHeightConstraint.constant = 300
+        let delta = UIScreen.main.bounds.height / 2
+        photoViewHeightConstraint.constant = delta
         UIView.animate(withDuration: 0.3) {
             self.view.layoutIfNeeded()
+            self.closePhotoViewBtn.isHidden = false
         }
     }
     
-    @objc func animateViewDown() {
+    func animateViewDown() {
+        cancellAllSession()
         photoViewHeightConstraint.constant = 0
         UIView.animate(withDuration: 0.3) {
             self.view.layoutIfNeeded()
+            self.closePhotoViewBtn.isHidden = true
         }
     }
     
@@ -106,14 +127,12 @@ class MapVC: UIViewController {
     }
     
     func addProgressLbl() {
-        // progressLbl = UILabel()
         progressLbl.frame = CGRect(x: (self.view.frame.width / 2) - 130, y: 153, width: 260, height: 40)
         progressLbl.font = UIFont(name: DEFAULT_FONT, size: 13)
         progressLbl.textColor = DEFAULT_COLOR
         progressLbl.textAlignment = .center
-        // progressLbl.text = "12 of 40 loaded"
+        progressLbl.text = "0 of \(self.photogalleryImgUrl.count) downloaded"
         photoView.addSubview(progressLbl)
-        
     }
     
     func removeProgressLbl() {
@@ -131,10 +150,10 @@ class MapVC: UIViewController {
 
 extension MapVC: MKMapViewDelegate {
     
-    // Guaranty the initial centering to current location
-    func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
-        centerMapOnUserLocation()
-    }
+    // Centering map on update current user location
+//    func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
+//        centerMapOnUserLocation()
+//    }
     
     // Customize the pin
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -167,10 +186,13 @@ extension MapVC: MKMapViewDelegate {
     @objc func dropApin(sender: UITapGestureRecognizer) {
         
         // some cleaning
+        cancellAllSession()
+        photogalleryImgUrl = []
+        photogalleryImg = []
+        photogalleryCollectionView.reloadData()
         removePin()
         removeProgressLbl()
-        self.addSpinner()
-        self.addProgressLbl()
+        addSpinner()
         
         // get the coordinate of tap gesture
         let touchPoint = sender.location(in: mapView) as CGPoint
@@ -180,17 +202,31 @@ extension MapVC: MKMapViewDelegate {
         let annotation = DroppablePin(coordinate: touchCoordinate, identifier: pinIdentifier)
         mapView.addAnnotation(annotation)
         
+        // load images
         retriveImgUrls(forAnnotation: annotation) { (success) in
             if success {
-                print("img url successfully loaded:\n\(self.photogalleryImgUrl)")
+                self.addProgressLbl()
+                self.retriveImgs(completion: { (success) in
+                    if success {
+                        print("image \(self.photogalleryImg.count) loaded")
+                        if self.photogalleryImgUrl.count == self.photogalleryImg.count {
+                            self.removeSpinner()
+                            self.removeProgressLbl()
+                        }
+                        self.photogalleryCollectionView.reloadData()
+                        
+                        let indexPath = IndexPath(row: self.photogalleryImg.count - 1, section: 0)
+                        self.photogalleryCollectionView.scrollToItem(at: indexPath, at: .bottom, animated: true)
+                    }
+                })
             }
         }
+        
         // zoom and center the new marker
         let coordinateRegion = MKCoordinateRegionMakeWithDistance(touchCoordinate, regionRadius, regionRadius)
         mapView.setRegion(coordinateRegion, animated: true)
         
         animateViewUp()
-        
     }
     
     func removePin() {
@@ -200,8 +236,6 @@ extension MapVC: MKMapViewDelegate {
     }
     
     func retriveImgUrls(forAnnotation annotation: DroppablePin, completion: @escaping (_ success: Bool) -> ()) {
-        photogalleryImgUrl = []
-        
         Alamofire.request(flickrUrlSearch(forAnnotation: annotation, numberOfPhotos: 40)).responseJSON { (response) in
             
             if response.result.error == nil {
@@ -214,8 +248,20 @@ extension MapVC: MKMapViewDelegate {
                     self.photogalleryImgUrl.append(url)
                 }
             }
-
             completion(true)
+        }
+    }
+    
+    func retriveImgs(completion: @escaping (_ success: Bool) -> ()) {
+        for url in photogalleryImgUrl {
+            Alamofire.request(url).responseImage { (image) in
+                if image.result.error == nil {
+                    guard let img = image.result.value else { return }
+                    self.photogalleryImg.append(img)
+                    self.progressLbl.text = "\(self.photogalleryImg.count) of \(self.photogalleryImgUrl.count) downloaded"
+                    completion(true)
+                }
+            }
         }
     }
 
@@ -246,19 +292,98 @@ extension MapVC: CLLocationManagerDelegate {
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::://
 //:: Extension to handle UICollectionViewDelegate and UICollectionViewDataSource :://
 
-extension MapVC: UICollectionViewDelegate, UICollectionViewDataSource {
+extension MapVC: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    
+    // Not required
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return 1
+    }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 4
+        return photogalleryImg.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if let cell = collectionView.dequeueReusableCell(withReuseIdentifier: photoCellReuseIdentifier, for: indexPath) as? PhotogalleryCell {
-            return cell
+            
+            if photogalleryImg.count > 0 {
+                cell.setupPhotogalleryCell(forImage: photogalleryImg[indexPath.row], withSide: computeCellWidth())
+                return cell
+            }
+            return UICollectionViewCell()
         }
         return UICollectionViewCell()
     }
     
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let side = computeCellWidth()
+        return CGSize(width: side, height: side*0.75)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let popVC = storyboard?.instantiateViewController(withIdentifier: "popVC") as? PopVC else { return }
+        
+        popVC.initData(withImage: photogalleryImg[indexPath.row])
+        present(popVC, animated: true, completion: nil)
+        
+    }
+    
+    func cancellAllSession() {
+        Alamofire.SessionManager.default.session.getTasksWithCompletionHandler { (sessionDataTask, sessionUploadTask, sessionDownloadTask) in
+            sessionDataTask.forEach({ (dataTask) in
+                dataTask.cancel()
+            })
+            sessionDownloadTask.forEach({ (downloadTask) in
+                downloadTask.cancel()
+            })
+        }
+    }
+    
+    // Consider to make a service
+    func computeCellWidth() -> CGFloat {
+        var columns: CGFloat = 3
+        if UIScreen.main.bounds.width > 320 && UIScreen.main.bounds.width < 414 {
+            columns = 4
+        } else {
+            columns = 5
+        }
+        let padding: CGFloat = 2
+        let withinCells: CGFloat = 1
+        return ((photogalleryCollectionView.frame.width - padding) - ((columns - 1) * withinCells)) / columns
+    }
     
 }
+
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::://
+//::::::::::::::::::::::::: Extension to handle 3D Touch :::::::::::::::::::::::::://
+
+extension MapVC: UIViewControllerPreviewingDelegate {
+    
+    func previewingContext(_ previewingContext: UIViewControllerPreviewing, viewControllerForLocation location: CGPoint) -> UIViewController? {
+        
+        guard let indexPath = photogalleryCollectionView.indexPathForItem(at: location) else { return nil }
+        guard let cell = photogalleryCollectionView.cellForItem(at: indexPath) else { return nil }
+        guard let popVC = storyboard?.instantiateViewController(withIdentifier: "popVC") as? PopVC else { return nil }
+        popVC.initData(withImage: photogalleryImg[indexPath.row])
+        
+        previewingContext.sourceRect = cell.contentView.frame
+        
+        return popVC
+    }
+    
+    func previewingContext(_ previewingContext: UIViewControllerPreviewing, commit viewControllerToCommit: UIViewController) {
+        show(viewControllerToCommit, sender: self)
+    }
+    
+    
+}
+
+
+
+
+
+
+
+
 
