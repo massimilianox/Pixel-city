@@ -9,7 +9,7 @@
 import UIKit
 
 // REST
-let API_KEY = "b9704bf0d2952258934e8a6a2cb6ce38"
+let API_KEY = "b9704bf0d2952258934e8a6a2cb6ce38" // -> Replace this with a valid flickr API KEY
 let BASE_URL = "https://api.flickr.com/services/rest/?"
 let METHOD = "flickr.photos.getRecent"
 func flickrUrlSearch(forAnnotation annotation: DroppablePin, numberOfPhotos number: Int) -> String {
