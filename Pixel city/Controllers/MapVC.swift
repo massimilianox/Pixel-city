@@ -327,7 +327,7 @@ extension MapVC: UICollectionViewDelegate, UICollectionViewDataSource, UICollect
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::://
 //::::::::::::::::::::::::: Extension to handle 3D Touch :::::::::::::::::::::::::://
 //:: Allows to preview the content of a ViewController in a popup win,
-//:: bluring the rear ViewController
+//:: bluring the rear ViewController, 3D touch handle pressure
 
 extension MapVC: UIViewControllerPreviewingDelegate {
     
