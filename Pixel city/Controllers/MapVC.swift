@@ -40,20 +40,18 @@ class MapVC: UIViewController {
         // Map view settings
         mapView.delegate = self
         locationManager.delegate = self
-        // locationManager.desiredAccuracy = kCLLocationAccuracyBest // Not necessary
         locationManager.startUpdatingLocation()
         configureLocationService()
         
         // Gesture recognizer
         addTapGestureRecognizer()
-        // addSwipeGestureRecognizer()
         
         // Photogallery
         photogalleryCollectionView.delegate = self
         photogalleryCollectionView.dataSource = self
         photogalleryCollectionView.register(PhotogalleryCell.self, forCellWithReuseIdentifier: photoCellReuseIdentifier)
         photogalleryCollectionView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
-        photogalleryCollectionView.frame = CGRect( // collection view needs a precise height for the scroll to work properly
+        photogalleryCollectionView.frame = CGRect( // CollectionView needs a defined height to scroll properly
             origin: CGPoint(x: 0, y: 0),
             size: CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height / 2)
         )
@@ -64,12 +62,7 @@ class MapVC: UIViewController {
         // Register for 3D Touch conform to protocol UIViewControllerPreviewingDelegate
         registerForPreviewing(with: self, sourceView: photogalleryCollectionView)
         
-        // Spinner
-        spinner.isHidden = true
-        photoView.addSubview(spinner)
-        
         closePhotoViewBtn.isHidden = true
-        
     }
     
     @IBAction func centerBtnPressed(_ sender: Any) {
@@ -87,12 +80,6 @@ class MapVC: UIViewController {
         mapView.addGestureRecognizer(tap)
     }
     
-//    func addSwipeGestureRecognizer() {
-//        let swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(animateViewDown))
-//        swipeDown.direction = .down
-//        photoView.addGestureRecognizer(swipeDown)
-//    }
-
     func animateViewUp() {
         let delta = UIScreen.main.bounds.height / 2
         photoViewHeightConstraint.constant = delta
@@ -108,6 +95,8 @@ class MapVC: UIViewController {
         UIView.animate(withDuration: 0.3) {
             self.view.layoutIfNeeded()
             self.closePhotoViewBtn.isHidden = true
+            self.removeSpinner()
+            self.removeProgressLbl()
         }
     }
     
@@ -116,14 +105,11 @@ class MapVC: UIViewController {
         spinner.color = DEFAULT_COLOR
         spinner.center = CGPoint(x: (self.view.frame.width / 2) - (spinner.frame.width / 2), y: 140 - (spinner.frame.height / 2))
         spinner.startAnimating()
-        spinner.isHidden = false
+        photoView.addSubview(spinner)
     }
     
     func removeSpinner() {
-        spinner.isHidden = true
-//        if spinner != nil {
-//            spinner.removeFromSuperview()
-//        }
+        spinner.removeFromSuperview()
     }
     
     func addProgressLbl() {
@@ -137,9 +123,6 @@ class MapVC: UIViewController {
     
     func removeProgressLbl() {
         progressLbl.removeFromSuperview()
-//        if progressLbl != nil {
-//            progressLbl?.removeFromSuperview()
-//        }
     }
     
 }
@@ -149,11 +132,6 @@ class MapVC: UIViewController {
 //::::::::::::::::::: Extension to handle Map View delegate ::::::::::::::::::::::://
 
 extension MapVC: MKMapViewDelegate {
-    
-    // Centering map on update current user location
-//    func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
-//        centerMapOnUserLocation()
-//    }
     
     // Customize the pin
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -174,9 +152,6 @@ extension MapVC: MKMapViewDelegate {
     func centerMapOnUserLocation() {
         guard let coordinate = locationManager.location?.coordinate else { return }
         
-        // MKCoordinateRegion use latitude and longitude
-        // let coordinateRegion = MKCoordinateRegion(center: coordinate, span: MKCoordinateSpan(latitudeDelta: regionRadius, longitudeDelta: regionRadius))
-        
         // MKCoordinateRegionMakeWithDistance use kilometre
         let coordinateRegion = MKCoordinateRegionMakeWithDistance(coordinate, regionRadius, regionRadius)
         
@@ -192,7 +167,10 @@ extension MapVC: MKMapViewDelegate {
         photogalleryCollectionView.reloadData()
         removePin()
         removeProgressLbl()
+        
+        // some settings
         addSpinner()
+        addProgressLbl()
         
         // get the coordinate of tap gesture
         let touchPoint = sender.location(in: mapView) as CGPoint
@@ -205,10 +183,8 @@ extension MapVC: MKMapViewDelegate {
         // load images
         retriveImgUrls(forAnnotation: annotation) { (success) in
             if success {
-                self.addProgressLbl()
                 self.retriveImgs(completion: { (success) in
                     if success {
-                        print("image \(self.photogalleryImg.count) loaded")
                         if self.photogalleryImgUrl.count == self.photogalleryImg.count {
                             self.removeSpinner()
                             self.removeProgressLbl()
@@ -294,11 +270,6 @@ extension MapVC: CLLocationManagerDelegate {
 
 extension MapVC: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
-    // Not required
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 1
-    }
-    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return photogalleryImg.count
     }
@@ -322,10 +293,8 @@ extension MapVC: UICollectionViewDelegate, UICollectionViewDataSource, UICollect
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let popVC = storyboard?.instantiateViewController(withIdentifier: "popVC") as? PopVC else { return }
-        
         popVC.initData(withImage: photogalleryImg[indexPath.row])
         present(popVC, animated: true, completion: nil)
-        
     }
     
     func cancellAllSession() {
@@ -357,6 +326,8 @@ extension MapVC: UICollectionViewDelegate, UICollectionViewDataSource, UICollect
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::://
 //::::::::::::::::::::::::: Extension to handle 3D Touch :::::::::::::::::::::::::://
+//:: Allows to preview the content of a ViewController in a popup win,
+//:: bluring the rear ViewController
 
 extension MapVC: UIViewControllerPreviewingDelegate {
     
@@ -375,7 +346,6 @@ extension MapVC: UIViewControllerPreviewingDelegate {
     func previewingContext(_ previewingContext: UIViewControllerPreviewing, commit viewControllerToCommit: UIViewController) {
         show(viewControllerToCommit, sender: self)
     }
-    
     
 }
 

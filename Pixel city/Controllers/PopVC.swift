@@ -12,8 +12,6 @@ class PopVC: UIViewController {
 
     @IBOutlet weak var popPhotogalleryImg: UIImageView!
     
-    @objc func canRotate() -> Void {} // used as label to abilate rotation only for this VC
-    
     var image: UIImage!
     
     override func viewDidLoad() {
@@ -25,6 +23,7 @@ class PopVC: UIViewController {
         
     }
     
+    // To fix back the orientation to portrait
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         UIDevice.current.setValue(Int(UIInterfaceOrientation.portrait.rawValue), forKey: "orientation")
