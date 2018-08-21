@@ -12,6 +12,8 @@ class PopVC: UIViewController {
 
     @IBOutlet weak var popPhotogalleryImg: UIImageView!
     
+    @objc func canRotate() -> Void {} // used as label to abilate rotation only for this VC
+    
     var image: UIImage!
     
     override func viewDidLoad() {
@@ -21,6 +23,11 @@ class PopVC: UIViewController {
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissView))
         self.view.addGestureRecognizer(tap)
         
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        UIDevice.current.setValue(Int(UIInterfaceOrientation.portrait.rawValue), forKey: "orientation")
     }
     
     func initData(withImage image: UIImage) {

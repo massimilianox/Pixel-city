@@ -53,7 +53,7 @@ class MapVC: UIViewController {
         photogalleryCollectionView.dataSource = self
         photogalleryCollectionView.register(PhotogalleryCell.self, forCellWithReuseIdentifier: photoCellReuseIdentifier)
         photogalleryCollectionView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
-        photogalleryCollectionView.frame = CGRect(
+        photogalleryCollectionView.frame = CGRect( // collection view needs a precise height for the scroll to work properly
             origin: CGPoint(x: 0, y: 0),
             size: CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height / 2)
         )
